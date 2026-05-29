@@ -1,3 +1,8 @@
+Valkey does not have a high-level module bus, but module-to-module communication is possible through ValkeyModule_Call, shared keys or Streams, and lower-level shared APIs. For auth and audit, I would be careful about synchronous module-to-module calls because auth is in the command hot path. A safer design is for the auth logic to emit audit events asynchronously, for example into a Stream or background buffer, so authentication latency is not impacted.
+
+There is also a security concern. Audit depends on the auth context, such as identity, token claims, command, resource, and allow/deny decision. If that context is passed through a public command or exposed interface, audit events could be spoofed, skipped, or modified. So either auth and audit should stay in the same module, or the communication should use an internal/private interface with clear failure handling.
+
+
 #include "valkeymodule.h"
 #include <string.h>
 
