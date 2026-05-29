@@ -5,6 +5,13 @@ Valkey does not have a high-level module bus, but module-to-module communication
 
 There is also a security concern. Audit depends on the auth context, such as identity, token claims, command, resource, and allow/deny decision. If that context is passed through a public command or exposed interface, audit events could be spoofed, skipped, or modified. So either auth and audit should stay in the same module, or the communication should use an internal/private interface with clear failure handling.
 
+Cons of module-to-module communication
+It adds latency in the hot path, especially if every command triggers another module call.
+It adds coupling between modules: version mismatch or API change can break behavior.
+It increases failure handling complexity: what happens if auth succeeds but audit fails?
+It makes debugging harder because one command execution may pass through multiple modules.
+It may affect Valkey stability if communication is synchronous, blocking, or memory-heavy.
+
 
 #include "valkeymodule.h"
 #include <string.h>
